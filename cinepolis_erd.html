@@ -1,0 +1,150 @@
+
+<div id="erd"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '13px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+  },
+});
+const { svg } = await mermaid.render('erd-svg', `erDiagram
+  COMPLEJO ||--o{ SALA : contiene
+  COMPLEJO {
+    int id_complejo PK
+    string nombre
+    string ciudad
+    string direccion
+    string estado
+    string telefono
+  }
+  SALA {
+    int id_sala PK
+    int id_complejo FK
+    string nombre
+    int capacidad
+    string tipo
+  }
+  SALA ||--o{ FUNCION : aloja
+  PELICULA ||--o{ FUNCION : programa
+  PELICULA {
+    int id_pelicula PK
+    string titulo
+    string clasificacion
+    int duracion_min
+    string genero
+    string idioma
+    date fecha_estreno
+    string director
+  }
+  FUNCION {
+    int id_funcion PK
+    int id_sala FK
+    int id_pelicula FK
+    datetime fecha_hora
+    decimal precio_base
+    string formato
+    string estado
+  }
+  FUNCION ||--o{ BOLETO : genera
+  CLIENTE ||--o{ BOLETO : compra
+  CLIENTE {
+    int id_cliente PK
+    string nombre
+    string email
+    string telefono
+    date fecha_registro
+    int puntos_lealtad
+  }
+  BOLETO {
+    int id_boleto PK
+    int id_funcion FK
+    int id_cliente FK
+    int id_asiento FK
+    decimal precio_final
+    string tipo_boleto
+    datetime fecha_compra
+    string estado
+  }
+  SALA ||--o{ ASIENTO : tiene
+  ASIENTO ||--o{ BOLETO : ocupa
+  ASIENTO {
+    int id_asiento PK
+    int id_sala FK
+    string fila
+    int numero
+    string tipo
+    boolean disponible
+  }
+  CLIENTE ||--o{ TRANSACCION : realiza
+  BOLETO ||--o{ TRANSACCION : incluye
+  TRANSACCION {
+    int id_transaccion PK
+    int id_cliente FK
+    datetime fecha
+    decimal monto_total
+    string metodo_pago
+    string estado
+  }
+  EMPLEADO ||--o{ TURNO : trabaja
+  COMPLEJO ||--o{ EMPLEADO : emplea
+  EMPLEADO {
+    int id_empleado PK
+    int id_complejo FK
+    string nombre
+    string puesto
+    string turno
+    decimal salario
+  }
+  TURNO {
+    int id_turno PK
+    int id_empleado FK
+    datetime inicio
+    datetime fin
+    string area
+  }
+  PELICULA ||--o{ PELICULA_GENERO : clasifica
+  GENERO ||--o{ PELICULA_GENERO : categoriza
+  GENERO {
+    int id_genero PK
+    string nombre
+  }
+  PELICULA_GENERO {
+    int id_pelicula FK
+    int id_genero FK
+  }
+`);
+document.getElementById('erd').innerHTML = svg;
+
+document.querySelectorAll('#erd svg.erDiagram .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+
+document.querySelectorAll('#erd svg.erDiagram .row-rect-odd path, #erd svg.erDiagram .row-rect-even path').forEach(p => {
+  p.setAttribute('stroke', 'none');
+});
+</script>
