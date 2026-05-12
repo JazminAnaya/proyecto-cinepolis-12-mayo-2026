@@ -1,0 +1,1 @@
+# proyecto-cinepolis-12-mayo-2026
