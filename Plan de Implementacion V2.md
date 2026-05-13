@@ -1,4 +1,6 @@
-Promt: actua como un creador de software quiero crear una aplicacion multiplataforma en flutter dart. (Utilizando firebase, vs code o Antigravity) que herramientas se requieren, ui, ux, dependencias, login autenticacion usuario password, base de datos, firestore, privider, dependencias en pubspec.yaml . Quiero crear un plan de implementacion en formato mark.down, para desarrollar la aplicacion "Cinepolis Valtierra" con colores azules, blancos y amarillos, tambien dame los archivos organizados necesarios para cada tabla utilizando CRUD (crear,actualizar,ver y borrar). Utiliza las siguientes entidades y atributos para las tablas de la base de datos: -- Script de creación de Base de Datos: bdcinepolis.sql
+# Promt:
+
+actua como un creador de software quiero crear una aplicacion multiplataforma en flutter dart. (Utilizando firebase, vs code o Antigravity) que herramientas se requieren, ui, ux, dependencias, login autenticacion usuario password, base de datos, firestore, privider, dependencias en pubspec.yaml . Quiero crear un plan de implementacion en formato mark.down, para desarrollar la aplicacion "Cinepolis Valtierra" con colores azules, blancos y amarillos, tambien dame los archivos organizados necesarios para cada tabla utilizando CRUD (crear,actualizar,ver y borrar). Utiliza las siguientes entidades y atributos para las tablas de la base de datos: -- Script de creación de Base de Datos: bdcinepolis.sql
 
 -- Generado para 12 entidades con integridad referencial
 
@@ -56,7 +58,7 @@ CREATE TABLE TURNO ( id_turno INT PRIMARY KEY, id_empleado INT, inicio DATETIME,
 OJO: no codigo, procedimiento paso a paso detallado para el desarrollo
 
 
-##Resultado: 
+# Resultado: 
 ¡Excelente proyecto! Como arquitecto de software, te guiaré en la creación de **Cinepolis Valtierra**. Vamos a estructurar un plan de implementación completo y detallado en Markdown, justo como lo solicitaste, sin escribir el código fuente directamente, sino definiendo el paso a paso, las herramientas y la organización.
 
 Aquí tienes tu plan de desarrollo:
