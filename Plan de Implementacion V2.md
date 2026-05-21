@@ -1,61 +1,6 @@
 # Promt:
 
-actua como un creador de software quiero crear una aplicacion multiplataforma en flutter dart. (Utilizando firebase, vs code o Antigravity) que herramientas se requieren, ui, ux, dependencias, login autenticacion usuario password, base de datos, firestore, privider, dependencias en pubspec.yaml . Quiero crear un plan de implementacion en formato mark.down, para desarrollar la aplicacion "Cinepolis Valtierra" con colores azules, blancos y amarillos, tambien dame los archivos organizados necesarios para cada tabla utilizando CRUD (crear,actualizar,ver y borrar). Utiliza las siguientes entidades y atributos para las tablas de la base de datos: -- Script de creación de Base de Datos: bdcinepolis.sql
-
--- Generado para 12 entidades con integridad referencial
-
-CREATE DATABASE IF NOT EXISTS bdcinepolis;
-
-USE bdcinepolis;
-
--- 1. Entidad COMPLEJO
-
-CREATE TABLE COMPLEJO ( id_complejo INT PRIMARY KEY, nombre VARCHAR(100), ciudad VARCHAR(100), direccion VARCHAR(255), estado VARCHAR(50), telefono VARCHAR(20) );
-
--- 2. Entidad SALA
-
-CREATE TABLE SALA ( id_sala INT PRIMARY KEY, id_complejo INT, nombre VARCHAR(50), capacidad INT, tipo VARCHAR(50), FOREIGN KEY (id_complejo) REFERENCES COMPLEJO(id_complejo) );
-
--- 3. Entidad ASIENTO
-
-CREATE TABLE ASIENTO ( id_asiento INT PRIMARY KEY, id_sala INT, fila VARCHAR(5), numero INT, tipo VARCHAR(50), disponible BOOLEAN, FOREIGN KEY (id_sala) REFERENCES SALA(id_sala) );
-
--- 4. Entidad PELICULA
-
-CREATE TABLE PELICULA ( id_pelicula INT PRIMARY KEY, titulo VARCHAR(150), clasificacion VARCHAR(10), duracion_min INT, genero VARCHAR(50), idioma VARCHAR(50), fecha_estreno DATE, director VARCHAR(100));
-
--- 5. Entidad GENERO
-
-CREATE TABLE GENERO ( id_genero INT PRIMARY KEY, nombre VARCHAR(50) );
-
--- 6. Entidad PELICULA_GENERO (Tabla Intermedia)
-
-CREATE TABLE PELICULA_GENERO ( id_pelicula INT, id_genero INT, PRIMARY KEY (id_pelicula, id_genero), FOREIGN KEY (id_pelicula) REFERENCES PELICULA(id_pelicula), FOREIGN KEY (id_genero) REFERENCES GENERO(id_genero));
-
--- 7. Entidad FUNCION
-
-CREATE TABLE FUNCION ( id_funcion INT PRIMARY KEY, id_sala INT, id_pelicula INT, fecha_hora DATETIME, precio_base DECIMAL(10, 2), formato VARCHAR(20), estado VARCHAR(20), FOREIGN KEY (id_sala) REFERENCES SALA(id_sala), FOREIGN KEY (id_pelicula) REFERENCES PELICULA(id_pelicula));
-
--- 8. Entidad CLIENTE
-
-CREATE TABLE CLIENTE ( id_cliente INT PRIMARY KEY, nombre VARCHAR(100), email VARCHAR(100), telefono VARCHAR(20), fecha_registro DATE, puntos_lealtad INT);
-
--- 9. Entidad BOLETO
-
-CREATE TABLE BOLETO ( id_boleto INT PRIMARY KEY, id_funcion INT, id_cliente INT, id_asiento INT, precio_final DECIMAL(10, 2), tipo_boleto VARCHAR(50), fecha_compra DATETIME, estado VARCHAR(20), FOREIGN KEY (id_funcion) REFERENCES FUNCION(id_funcion), FOREIGN KEY (id_cliente) REFERENCES CLIENTE(id_cliente), FOREIGN KEY (id_asiento) REFERENCES ASIENTO(id_asiento) );
-
--- 10. Entidad TRANSACCION
-
-CREATE TABLE TRANSACCION ( id_transaccion INT PRIMARY KEY, id_cliente INT, fecha DATETIME, monto_total DECIMAL(10, 2), metodo_pago VARCHAR(50), estado VARCHAR(20), FOREIGN KEY (id_cliente) REFERENCES CLIENTE(id_cliente));
-
--- 11. Entidad EMPLEADO
-
-CREATE TABLE EMPLEADO ( id_empleado INT PRIMARY KEY, id_complejo INT, nombre VARCHAR(100), puesto VARCHAR(50), turno VARCHAR(50), salario DECIMAL(10, 2), FOREIGN KEY (id_complejo) REFERENCES COMPLEJO(id_complejo));
-
--- 12. Entidad TURNO
-
-CREATE TABLE TURNO ( id_turno INT PRIMARY KEY, id_empleado INT, inicio DATETIME, fin DATETIME,area VARCHAR(50),FOREIGN KEY (id_empleado) REFERENCES EMPLEADO(id_empleado)); 
-OJO: no codigo, procedimiento paso a paso detallado para el desarrollo
+actua como un creador de software quiero crear una aplicacion multiplataforma en flutter dart. (Utilizando firebase, vs code o Antigravity) que herramientas se requieren, ui, ux, dependencias, login autenticacion usuario password, base de datos, firestore, privider, dependencias en pubspec.yaml . Quiero crear un plan de implementacion en formato mark.down, para desarrollar la aplicacion "Cinepolis Valtierra" con colores azules, blancos y amarillos, tambien dame los archivos organizados necesarios para cada tabla utilizando CRUD (crear,actualizar,ver y borrar). OJO: no codigo, procedimiento paso a paso detallado para el desarrollo
 
 
 # Resultado: 
@@ -114,7 +59,6 @@ lib/
 │   │   ├── pelicula.dart
 │   │   ├── cliente.dart
 │   │   ├── ... (uno por entidad)
-│   │   └── asiento.dart
 │   ├── services/            # Lógica de negocio y acceso a datos
 │   │   ├── auth_service.dart
 │   │   ├── database_service.dart
@@ -193,31 +137,40 @@ dev_dependencies:
 ### 3.1. Adaptación de la Base de Datos a Firestore
 Tu script SQL usa un modelo relacional. En Firestore (NoSQL), trabajaremos con **Documentos** y **Colecciones**. Aquí tienes la equivalencia para cada una de tus tablas. **Nota:** Usaremos el nombre de la tabla como `ID` del documento, en minúsculas y plural.
 
-*   **1. `COMPLEJO`** → Colección `complejos`
-    *   **Estructura del Documento:** `{ "nombre": "Cinepolis Valtierra Centro", "ciudad": "Valtierra", ... }`
-*   **2. `SALA`** → Colección `salas`
-    *   **Documento:** `{ "id_complejo": "ID_DE_COMPLEJO", "nombre": "Sala 1", "capacidad": 100, ... }`
-*   **3. `ASIENTO`** → Subcolección dentro de cada `SALA`: `salas/{id_sala}/asientos/{id_asiento}`
-    *   **Documento:** `{ "fila": "A", "numero": 1, "tipo": "Preferente", "disponible": true }`
-*   **4. `PELICULA`** → Colección `peliculas`
-    *   **Documento:** `{ "titulo": "Dune: Parte Dos", "genero": ["Ciencia Ficción", "Aventura"], ... }` *(Los géneros se manejan como un array en el documento principal para simplificar las consultas)*.
-*   **5. `GENERO`** → Colección `generos` (Opcional, para catálogo maestro).
-*   **6. `PELICULA_GENERO`** → No es necesaria una colección intermedia. Se integra en el campo `genero` de la colección `peliculas`.
-*   **7. `FUNCION`** → Colección `funciones`
-    *   **Documento:** `{ "id_sala": "ID_DE_SALA", "id_pelicula": "ID_DE_PELICULA", "fecha_hora": Timestamp, "precio_base": 85.00, ... }`
-*   **8. `CLIENTE`** → Colección `clientes`. **¡Clave!** El `id_cliente` será el `UID` del usuario autenticado en Firebase Auth.
-    *   **Documento:** `{ "nombre": "Juan Pérez", "email": "juan@email.com", "puntos_lealtad": 1500, ... }`
-*   **9. `BOLETO`** → Colección `boletos`
-    *   **Documento:** `{ "id_funcion": ..., "id_cliente": ..., "id_asiento": ..., "fecha_compra": FieldValue.serverTimestamp(), ... }`
-*   **10. `TRANSACCION`** → Colección `transacciones`
-    *   **Documento:** `{ "id_cliente": ..., "monto_total": 170.00, "metodo_pago": "Tarjeta", ... }`
-*   **11. `EMPLEADO`** → Colección `empleados`
-*   **12. `TURNO`** → Subcolección `empleados/{id_empleado}/turnos/{id_turno}`
+1. Clientes
+Documentos identificados por el UID único generado por Firebase Authentication.
 
-### 3.2. Reglas de Seguridad de Firestore (Pseudocódigo)
-*   **`clientes/{userId}`**: Solo el propio usuario autenticado puede leer/escribir.
-*   **`boletos`**: Un usuario autenticado puede leer sus propios boletos (`id_cliente == request.auth.uid`). Solo un admin puede escribir.
-*   **`peliculas`, `funciones`, `salas`**: Lectura pública para usuarios autenticados. Solo admin escribe.
+Campos: email (String), fecha_registro (String), nombre (String), puntos_cinepolis (Number), telefono (String).
+
+2. Complejos
+Sedes físicas del cine que proveen infraestructura para las salas.
+
+Campos: ciudad (String), direccion (String), estado (String), nombre (String), telefono (String).
+
+3. Empleados
+Personal que labora en el complejo cinematográfico.
+
+Campos: RFC (String), email (String), id_complejo (Reference -> /Complejos/{id}), nombre (String), puesto (String), salario (Number), telefono (String).
+
+4. Funciones
+Horarios específicos en los que se proyecta una película en una sala determinada.
+
+Campos: estado (String), fecha_hora (String), formato (String), id_pelicula (Reference -> /Peliculas/{id}), id_sala (Reference -> /Salas/{id}), precio_base (Number).
+
+5. Inventario_Alimentos
+Control del stock de productos consumibles de la dulcería del cine.
+
+Campos: categoria (String), estado (String), nombre (String), precio (Number), stock_disponible (Number).
+
+6. Peliculas
+Catálogo de producciones cinematográficas disponibles en el sistema.
+
+Campos: clasificacion (String), director (String), duracion_min (Number), fecha_estreno (String), genero (String), idioma (String), nombre (String), sinopsis (String).
+
+7. Salas
+Espacios físicos dentro de un complejo donde ocurren las proyecciones.
+
+Campos: capacidad (Number), id_complejos (Reference -> /Complejos/{id}), nombre (String), tipo (String).
 
 ## 4. Procedimiento Paso a Paso para el Desarrollo
 
@@ -286,13 +239,6 @@ Aquí tienes la organización de archivos y métodos para cada tabla, usando **P
 *   **Modelo:** `funcion.dart`
 *   **Servicio:** `funcion_service.dart` (Recuerda que al crear una función, debes validar que la sala y película existan).
 *   **Pantalla Admin:** `admin_funciones_screen.dart` y `funcion_form_screen.dart` (con dropdowns para seleccionar sala y película).
-
-### 5.3. Para `BOLETO`
-*   **Modelo:** `boleto.dart`
-*   **Servicio:** `boleto_service.dart`
-    *   Método especial: `Future<List<Asiento>> getAsientosOcupados(String idFuncion)`.
-    *   Método especial: `Stream<List<Boleto>> getBoletosByCliente(String idCliente)`.
-*   **Pantalla Cliente:** `Mis Boletos` (Solo LECTURA, no se borran ni editan boletos. Un boleto puede tener un campo `estado: 'cancelado'` para **ACTUALIZAR** en caso de devolución).
 
 ## 6. Diseño UI/UX Específico con Paleta de Colores
 
